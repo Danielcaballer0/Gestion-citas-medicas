@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Buscar Profesionales - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Buscar Profesionales</h1>
+    
+    <!-- Search Form -->
+    <div class="card border-0 bg-dark shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('main.search') }}" class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.specialty.id }}" class="form-label">{{ form.specialty.label }}</label>
+                    {{ form.specialty(class="form-select") }}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.date.id }}" class="form-label">{{ form.date.label }} <small class="text-muted">(Opcional)</small></label>
+                    {{ form.date(class="form-control", type="date") }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    {{ form.submit(class="btn btn-primary w-100") }}
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="row">
+        {% if results %}
+            {% for professional, user in results %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 bg-dark shadow-sm">
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-user-md fa-5x text-primary"></i>
+                            </div>
+                            <h5 class="card-title text-center">{{ user.first_name }} {{ user.last_name }}</h5>
+                            
+                            {% if professional.specialties %}
+                                <div class="mb-3 text-center">
+                                    {% for specialty in professional.specialties %}
+                                        <span class="badge bg-primary me-1">{{ specialty.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="small mb-3">
+                                {% if professional.years_experience %}
+                                    <p class="mb-1"><i class="fas fa-briefcase me-2"></i>{{ professional.years_experience }} años de experiencia</p>
+                                {% endif %}
+                                
+                                {% if professional.accepts_insurance %}
+                                    <p class="mb-1"><i class="fas fa-check-circle me-2 text-success"></i>Acepta seguros</p>
+                                {% endif %}
+                                
+                                {% if professional.schedules %}
+                                    <p class="mb-1"><i class="fas fa-calendar-alt me-2"></i>{{ professional.schedules|length }} días disponibles</p>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('main.professional_profile', professional_id=professional.id) }}" 
+                                   class="btn btn-outline-primary">Ver Perfil</a>
+                                   
+                                {% if current_user.is_authenticated and current_user.is_client() %}
+                                    <a href="{{ url_for('client.book_appointment', professional_id=professional.id) }}" 
+                                       class="btn btn-primary">Reservar Cita</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <!-- Pagination -->
+            {% if pagination and pagination.pages > 1 %}
+                <div class="mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if pagination.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.search', page=pagination.prev_num, specialty=specialty_id) }}">
+                                        Anterior
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Anterior</span>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page in pagination.iter_pages() %}
+                                {% if page %}
+                                    <li class="page-item {{ 'active' if page == pagination.page else '' }}">
+                                        <a class="page-link" href="{{ url_for('main.search', page=page, specialty=specialty_id) }}">
+                                            {{ page }}
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if pagination.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('main.search', page=pagination.next_num, specialty=specialty_id) }}">
+                                        Siguiente
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Siguiente</span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    {% if request.args %}
+                        No se encontraron profesionales que coincidan con tu búsqueda.
+                    {% else %}
+                        Utiliza el formulario para buscar profesionales.
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

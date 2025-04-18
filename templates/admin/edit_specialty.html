@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Especialidad - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Editar Especialidad</h4>
+                    <a href="{{ url_for('admin.specialties') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Especialidades
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin.edit_specialty', specialty_id=specialty.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.name.id }}" class="form-label">{{ form.name.label }}</label>
+                            {{ form.name(class="form-control") }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.description.id }}" class="form-label">{{ form.description.label }}</label>
+                            {{ form.description(class="form-control", rows=4) }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('admin.specialties') }}" class="btn btn-outline-secondary">Cancelar</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if specialty.professionals %}
+                <div class="card border-0 bg-dark shadow-sm mt-4">
+                    <div class="card-header bg-dark border-bottom">
+                        <h4 class="mb-0">Profesionales con esta Especialidad</h4>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush bg-dark">
+                            {% for professional in specialty.professionals %}
+                                <li class="list-group-item bg-dark border-secondary">
+                                    {{ professional.user.first_name }} {{ professional.user.last_name }}
+                                    <span class="text-muted">{{ professional.user.email }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

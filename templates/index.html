@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="py-5 text-center">
+        <div class="row py-lg-5">
+            <div class="col-lg-8 col-md-10 mx-auto">
+                <h1 class="fw-bold">Gestor de Citas para Profesionales</h1>
+                <p class="lead text-muted">
+                    Simplifica la gestión de citas con tus profesionales favoritos.
+                    Agenda, modifica y cancela citas de manera fácil y rápida.
+                </p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+                    {% if not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4 gap-3 me-2">Registrarse</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">Iniciar Sesión</a>
+                    {% else %}
+                        <a href="{{ url_for('main.search') }}" class="btn btn-primary btn-lg px-4 gap-3">Buscar Profesionales</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <h2 class="text-center mb-5">¿Por qué elegirnos?</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <i class="fas fa-search fa-3x mb-3 text-primary"></i>
+                        <h4 class="card-title">Encuentra profesionales</h4>
+                        <p class="card-text">Busca profesionales según especialidad y disponibilidad de horarios.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-alt fa-3x mb-3 text-primary"></i>
+                        <h4 class="card-title">Agenda fácilmente</h4>
+                        <p class="card-text">Visualiza la disponibilidad y reserva citas con unos pocos clics.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 border-0 bg-dark">
+                    <div class="card-body text-center">
+                        <i class="fas fa-bell fa-3x mb-3 text-primary"></i>
+                        <h4 class="card-title">Notificaciones</h4>
+                        <p class="card-text">Recibe confirmaciones y recordatorios de tus citas programadas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Specialties Section -->
+    <section class="py-5">
+        <h2 class="text-center mb-5">Especialidades Disponibles</h2>
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+            {% for specialty in specialties %}
+                <div class="col">
+                    <div class="card h-100 text-center border-0 bg-dark">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ specialty.name }}</h5>
+                            <p class="card-text small">{{ specialty.description|truncate(60) }}</p>
+                            <a href="{{ url_for('main.search', specialty=specialty.id) }}" class="btn btn-sm btn-outline-primary">
+                                Ver Profesionales
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Featured Professionals -->
+    {% if featured_professionals %}
+        <section class="py-5">
+            <h2 class="text-center mb-5">Profesionales Destacados</h2>
+            <div class="row">
+                {% for professional, user in featured_professionals %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100 border-0 bg-dark">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-circle fa-5x text-secondary"></i>
+                                </div>
+                                <h5 class="card-title">{{ user.first_name }} {{ user.last_name }}</h5>
+                                <p class="card-text">
+                                    {% for specialty in professional.specialties %}
+                                        <span class="badge bg-primary">{{ specialty.name }}</span>
+                                    {% endfor %}
+                                </p>
+                                <a href="{{ url_for('main.professional_profile', professional_id=professional.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">Ver Perfil</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Stats Section -->
+    <section class="py-5 bg-primary text-white rounded">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-4 mb-3">
+                    <i class="fas fa-users fa-3x mb-3"></i>
+                    <h3>{{ professionals_count }}</h3>
+                    <p>Profesionales Registrados</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <i class="fas fa-calendar-check fa-3x mb-3"></i>
+                    <h3>{{ specialties|length }}</h3>
+                    <p>Especialidades Disponibles</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <i class="fas fa-clock fa-3x mb-3"></i>
+                    <h3>24/7</h3>
+                    <p>Disponibilidad del Sistema</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 text-center">
+        <h2 class="mb-4">¿Listo para comenzar?</h2>
+        <p class="lead mb-4">Únete a nuestra plataforma y simplifica la gestión de tus citas.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-lg btn-primary">Regístrate Ahora</a>
+        {% else %}
+            <a href="{{ url_for('main.search') }}" class="btn btn-lg btn-primary">Buscar Profesionales</a>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+/* Custom styles for Gestor de Citas */
+
+/* General Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+/* Badge styles */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.6em;
+}
+
+/* Card hover effects */
+.card:not(.no-hover):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Form control focus */
+.form-control:focus, .form-select:focus {
+    border-color: rgba(13, 110, 253, 0.5);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Buttons hover effects */
+.btn-outline-primary:hover {
+    background-color: rgba(13, 110, 253, 0.8);
+}
+
+/* Table styles */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Dropdown menu styles */
+.dropdown-menu {
+    min-width: 12rem;
+}
+
+/* Navbar toggler focus */
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Pagination active item */
+.page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Multi-select dropdown */ 
+select[multiple] {
+    height: auto;
+    min-height: 120px;
+}
+
+/* Calendar event styling */
+.fc-event {
+    border: none;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+/* Footer styling */
+footer {
+    margin-top: auto;
+    padding-bottom: 20px;
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+}
+
+/* Card header padding */
+.card-header {
+    padding: 1rem 1.25rem;
+}
+
+/* Sticky sidebar for appointment booking */
+@media (min-width: 992px) {
+    .sticky-top {
+        top: 20px;
+        z-index: 1000;
+    }
+}
+
+/* Time slot buttons */
+.time-slot-btn {
+    transition: all 0.2s ease;
+}
+
+.time-slot-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Spacing utilities */
+.px-6 {
+    padding-left: 4rem !important;
+    padding-right: 4rem !important;
+}
+
+.py-6 {
+    padding-top: 4rem !important;
+    padding-bottom: 4rem !important;
+}
+
+.mt-6 {
+    margin-top: 4rem !important;
+}
+
+.mb-6 {
+    margin-bottom: 4rem !important;
+}
+
+/* Animation for certain elements */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

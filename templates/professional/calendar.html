@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendario de Citas - Gestor de Citas{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css">
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+    #calendar {
+        background-color: rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        border-radius: 0.25rem;
+    }
+    .fc-day-today {
+        background-color: rgba(81, 145, 213, 0.1) !important;
+    }
+    .fc-button-primary {
+        background-color: #212529 !important;
+        border-color: #495057 !important;
+    }
+    .fc-button-primary:hover {
+        background-color: #343a40 !important;
+    }
+    .fc-button-active {
+        background-color: #0d6efd !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Calendario de Citas</h1>
+        <div>
+            <a href="{{ url_for('professional.appointments') }}" class="btn btn-outline-primary me-2">
+                <i class="fas fa-list me-2"></i>Ver Lista de Citas
+            </a>
+            <a href="{{ url_for('professional.dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+            </a>
+        </div>
+    </div>
+    
+    <div class="card border-0 bg-dark shadow-sm mb-4">
+        <div class="card-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment Details Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title" id="appointmentModalLabel">Detalles de la Cita</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Cliente:</strong> <span id="modalClientName"></span></p>
+                <p><strong>Fecha:</strong> <span id="modalDate"></span></p>
+                <p><strong>Hora:</strong> <span id="modalTime"></span></p>
+                <p><strong>Estado:</strong> <span id="modalStatus"></span></p>
+                <p><strong>Notas:</strong> <span id="modalNotes"></span></p>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <a href="#" id="modalEditLink" class="btn btn-primary">Editar Cita</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+            },
+            locale: 'es',
+            businessHours: true,
+            navLinks: true,
+            editable: false,
+            dayMaxEvents: true,
+            events: "{{ url_for('professional.api_appointments') }}",
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            },
+            eventClick: function(info) {
+                const event = info.event;
+                const startDate = new Date(event.start);
+                const endDate = new Date(event.end);
+                
+                // Format date and time
+                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = startDate.toLocaleDateString('es-ES', dateOptions);
+                const formattedTime = `${startDate.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', hour12: false})} - ${endDate.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', hour12: false})}`;
+                
+                // Set modal content
+                document.getElementById('modalClientName').textContent = event.extendedProps.clientName || 'No disponible';
+                document.getElementById('modalDate').textContent = formattedDate;
+                document.getElementById('modalTime').textContent = formattedTime;
+                
+                // Set status with badge
+                let statusHtml = '';
+                switch(event.extendedProps.status) {
+                    case 'pending':
+                        statusHtml = '<span class="badge bg-warning">Pendiente</span>';
+                        break;
+                    case 'confirmed':
+                        statusHtml = '<span class="badge bg-success">Confirmada</span>';
+                        break;
+                    case 'cancelled':
+                        statusHtml = '<span class="badge bg-danger">Cancelada</span>';
+                        break;
+                    case 'completed':
+                        statusHtml = '<span class="badge bg-info">Completada</span>';
+                        break;
+                    default:
+                        statusHtml = '<span class="badge bg-secondary">Desconocido</span>';
+                }
+                document.getElementById('modalStatus').innerHTML = statusHtml;
+                
+                document.getElementById('modalNotes').textContent = event.extendedProps.notes || 'Sin notas';
+                
+                // Set edit link
+                document.getElementById('modalEditLink').href = "{{ url_for('professional.update_appointment', appointment_id=0) }}".replace('0', event.id);
+                
+                // Show modal
+                const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+                appointmentModal.show();
+            }
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

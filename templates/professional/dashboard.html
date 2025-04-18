@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel Profesional - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Panel Profesional</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 bg-dark text-white shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check fa-3x mb-3 text-primary"></i>
+                    <h2 class="mb-0">{{ total_appointments }}</h2>
+                    <p class="mb-0">Citas Totales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 bg-dark text-white shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-3x mb-3 text-warning"></i>
+                    <h2 class="mb-0">{{ pending_appointments }}</h2>
+                    <p class="mb-0">Citas Pendientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 bg-dark text-white shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-3x mb-3 text-success"></i>
+                    <h2 class="mb-0">{{ confirmed_appointments }}</h2>
+                    <p class="mb-0">Citas Confirmadas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Today's Appointments -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 bg-dark shadow-sm h-100">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Citas de Hoy</h4>
+                    <a href="{{ url_for('professional.appointments', date='today') }}" class="btn btn-sm btn-outline-primary">Ver Todas</a>
+                </div>
+                <div class="card-body">
+                    {% if today_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in today_appointments %}
+                                        <tr>
+                                            <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                                            <td>{{ appointment.client.user.first_name }} {{ appointment.client.user.last_name }}</td>
+                                            <td>
+                                                {% if appointment.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pendiente</span>
+                                                {% elif appointment.status == 'confirmed' %}
+                                                    <span class="badge bg-success">Confirmada</span>
+                                                {% elif appointment.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">Cancelada</span>
+                                                {% elif appointment.status == 'completed' %}
+                                                    <span class="badge bg-info">Completada</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('professional.update_appointment', appointment_id=appointment.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No tienes citas programadas para hoy.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upcoming Appointments -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 bg-dark shadow-sm h-100">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Próximas Citas</h4>
+                    <a href="{{ url_for('professional.appointments', date='upcoming') }}" class="btn btn-sm btn-outline-primary">Ver Todas</a>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Hora</th>
+                                        <th>Cliente</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in upcoming_appointments %}
+                                        <tr>
+                                            <td>{{ appointment.date.strftime('%d/%m/%Y') }}</td>
+                                            <td>{{ appointment.start_time.strftime('%H:%M') }}</td>
+                                            <td>{{ appointment.client.user.first_name }} {{ appointment.client.user.last_name }}</td>
+                                            <td>
+                                                {% if appointment.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pendiente</span>
+                                                {% elif appointment.status == 'confirmed' %}
+                                                    <span class="badge bg-success">Confirmada</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No tienes citas programadas próximamente.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="col-md-12">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Acciones Rápidas</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{{ url_for('professional.profile') }}" class="btn btn-outline-primary w-100 p-3">
+                                <i class="fas fa-user-circle fa-2x mb-2"></i>
+                                <div>Editar Perfil</div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('professional.schedule') }}" class="btn btn-outline-primary w-100 p-3">
+                                <i class="fas fa-clock fa-2x mb-2"></i>
+                                <div>Gestionar Horarios</div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{{ url_for('professional.calendar') }}" class="btn btn-outline-primary w-100 p-3">
+                                <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                                <div>Ver Calendario</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

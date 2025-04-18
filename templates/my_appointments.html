@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Citas - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Mis Citas</h1>
+    
+    <div class="row">
+        <!-- Upcoming Appointments -->
+        <div class="col-md-12 mb-4">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Próximas Citas</h4>
+                </div>
+                <div class="card-body">
+                    {% if upcoming %}
+                        <div class="table-responsive">
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Profesional</th>
+                                        <th>Especialidad</th>
+                                        <th>Fecha</th>
+                                        <th>Hora</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in upcoming %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('main.professional_profile', professional_id=appointment.professional.id) }}">
+                                                    {{ appointment.professional.user.get_full_name() }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if appointment.professional.specialties %}
+                                                    {{ appointment.professional.specialties[0].name }}
+                                                {% else %}
+                                                    <span class="text-muted">No especificada</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ appointment.date.strftime('%d/%m/%Y') }}</td>
+                                            <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                                            <td>
+                                                {% if appointment.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pendiente</span>
+                                                {% elif appointment.status == 'confirmed' %}
+                                                    <span class="badge bg-success">Confirmada</span>
+                                                {% elif appointment.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">Cancelada</span>
+                                                {% elif appointment.status == 'completed' %}
+                                                    <span class="badge bg-info">Completada</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex">
+                                                    <a href="{{ url_for('main.professional_profile', professional_id=appointment.professional.id) }}" 
+                                                       class="btn btn-sm btn-outline-primary me-2">
+                                                        <i class="fas fa-user"></i>
+                                                    </a>
+                                                    
+                                                    {% if appointment.status != 'cancelled' %}
+                                                        <form method="POST" action="{{ url_for('client.cancel_appointment', appointment_id=appointment.id) }}"
+                                                              onsubmit="return confirm('¿Estás seguro de que deseas cancelar esta cita?');">
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No tienes citas programadas próximamente.
+                            <a href="{{ url_for('main.search') }}" class="alert-link">Busca profesionales</a> para agendar una cita.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Past Appointments -->
+        <div class="col-md-12">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Historial de Citas</h4>
+                </div>
+                <div class="card-body">
+                    {% if past %}
+                        <div class="table-responsive">
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Profesional</th>
+                                        <th>Especialidad</th>
+                                        <th>Fecha</th>
+                                        <th>Hora</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in past %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('main.professional_profile', professional_id=appointment.professional.id) }}">
+                                                    {{ appointment.professional.user.get_full_name() }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if appointment.professional.specialties %}
+                                                    {{ appointment.professional.specialties[0].name }}
+                                                {% else %}
+                                                    <span class="text-muted">No especificada</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ appointment.date.strftime('%d/%m/%Y') }}</td>
+                                            <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                                            <td>
+                                                {% if appointment.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pendiente</span>
+                                                {% elif appointment.status == 'confirmed' %}
+                                                    <span class="badge bg-success">Confirmada</span>
+                                                {% elif appointment.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">Cancelada</span>
+                                                {% elif appointment.status == 'completed' %}
+                                                    <span class="badge bg-info">Completada</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('main.professional_profile', professional_id=appointment.professional.id) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-user"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No tienes citas pasadas.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

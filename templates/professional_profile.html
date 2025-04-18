@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.first_name }} {{ user.last_name }} - Perfil Profesional{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Professional Info -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-md fa-7x text-primary"></i>
+                    </div>
+                    <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+                    
+                    {% if professional.specialties %}
+                        <div class="mb-3">
+                            {% for specialty in professional.specialties %}
+                                <span class="badge bg-primary me-1">{{ specialty.name }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if professional.years_experience %}
+                        <p><i class="fas fa-briefcase me-2"></i>{{ professional.years_experience }} años de experiencia</p>
+                    {% endif %}
+                    
+                    {% if professional.accepts_insurance %}
+                        <p><i class="fas fa-check-circle me-2 text-success"></i>Acepta seguros médicos</p>
+                    {% else %}
+                        <p><i class="fas fa-times-circle me-2 text-danger"></i>No acepta seguros médicos</p>
+                    {% endif %}
+                    
+                    {% if professional.bio %}
+                        <div class="mt-4">
+                            <h5>Acerca de</h5>
+                            <p class="text-start">{{ professional.bio }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    {% if current_user.is_authenticated and current_user.is_client() %}
+                        <a href="{{ url_for('client.book_appointment', professional_id=professional.id) }}" 
+                           class="btn btn-primary mt-3">
+                            <i class="fas fa-calendar-plus me-2"></i>Reservar Cita
+                        </a>
+                    {% elif not current_user.is_authenticated %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary mt-3">
+                            <i class="fas fa-sign-in-alt me-2"></i>Inicia sesión para reservar
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Calendar and Availability -->
+        <div class="col-md-8">
+            <div class="card border-0 bg-dark shadow-sm mb-4">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Horario de Atención</h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm table-dark">
+                        <thead>
+                            <tr>
+                                <th>Día</th>
+                                <th>Horario</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] %}
+                            {% for day_idx in range(7) %}
+                                <tr>
+                                    <td>{{ days[day_idx] }}</td>
+                                    <td>
+                                        {% set has_schedule = false %}
+                                        {% for schedule in professional.schedules %}
+                                            {% if schedule.day_of_week == day_idx %}
+                                                {{ schedule.start_time.strftime('%H:%M') }} - {{ schedule.end_time.strftime('%H:%M') }}
+                                                {% set has_schedule = true %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if not has_schedule %}
+                                            <span class="text-muted">No disponible</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {% if current_user.is_authenticated and current_user.is_client() %}
+                <div class="card border-0 bg-dark shadow-sm">
+                    <div class="card-header bg-dark border-bottom">
+                        <h4 class="mb-0">Próxima Disponibilidad</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="calendar"></div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('client.book_appointment', professional_id=professional.id) }}" 
+                               class="btn btn-primary">Ver Disponibilidad Completa</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('calendar')) {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridWeek',
+                headerToolbar: {
+                    left: '',
+                    center: 'title',
+                    right: ''
+                },
+                height: 'auto',
+                selectable: false,
+                businessHours: [
+                    {% for schedule in professional.schedules %}
+                    {
+                        daysOfWeek: [{{ schedule.day_of_week }}],
+                        startTime: '{{ schedule.start_time.strftime("%H:%M") }}',
+                        endTime: '{{ schedule.end_time.strftime("%H:%M") }}'
+                    },
+                    {% endfor %}
+                ]
+            });
+            calendar.render();
+        }
+    });
+</script>
+{% endblock %}

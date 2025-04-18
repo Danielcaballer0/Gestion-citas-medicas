@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Horarios - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestionar Horarios</h1>
+        <a href="{{ url_for('professional.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+        </a>
+    </div>
+    
+    <div class="row">
+        <!-- Add Schedule Form -->
+        <div class="col-md-5 mb-4">
+            <div class="card border-0 bg-dark shadow-sm h-100">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Agregar/Editar Horario</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('professional.schedule') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.day_of_week.id }}" class="form-label">{{ form.day_of_week.label }}</label>
+                            {{ form.day_of_week(class="form-select") }}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="{{ form.start_time.id }}" class="form-label">{{ form.start_time.label }}</label>
+                                {{ form.start_time(class="form-control", type="time") }}
+                                {% if form.start_time.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.start_time.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-6">
+                                <label for="{{ form.end_time.id }}" class="form-label">{{ form.end_time.label }}</label>
+                                {{ form.end_time(class="form-control", type="time") }}
+                                {% if form.end_time.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.end_time.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Schedule -->
+        <div class="col-md-7 mb-4">
+            <div class="card border-0 bg-dark shadow-sm h-100">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Horarios Actuales</h4>
+                </div>
+                <div class="card-body">
+                    {% if schedules %}
+                        <div class="table-responsive">
+                            <table class="table table-dark">
+                                <thead>
+                                    <tr>
+                                        <th>Día</th>
+                                        <th>Hora de Inicio</th>
+                                        <th>Hora de Fin</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for schedule in schedules %}
+                                        <tr>
+                                            <td>{{ days[schedule.day_of_week] }}</td>
+                                            <td>{{ schedule.start_time.strftime('%H:%M') }}</td>
+                                            <td>{{ schedule.end_time.strftime('%H:%M') }}</td>
+                                            <td>
+                                                <form method="POST" action="{{ url_for('professional.delete_schedule', schedule_id=schedule.id) }}"
+                                                      onsubmit="return confirm('¿Estás seguro de que deseas eliminar este horario?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No has definido ningún horario de atención. Utiliza el formulario para agregar tus horas disponibles.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Schedule Information -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Información sobre Horarios</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-primary">
+                        <h5><i class="fas fa-info-circle me-2"></i>Cómo funciona el sistema de horarios</h5>
+                        <ul>
+                            <li>Define los días y rangos horarios en los que estarás disponible para atender citas.</li>
+                            <li>Los clientes solo podrán reservar citas dentro de estos horarios.</li>
+                            <li>Si necesitas modificar un día específico, primero elimina el horario existente y luego agrega uno nuevo.</li>
+                            <li>Recuerda: Los rangos horarios deben ser consecutivos (hora de fin posterior a hora de inicio).</li>
+                            <li>Las citas ya reservadas no se verán afectadas por cambios en tus horarios.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

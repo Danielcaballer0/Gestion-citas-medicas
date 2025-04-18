@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Panel de Administración</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-dark text-white shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x mb-3 text-primary"></i>
+                    <h2 class="mb-0">{{ total_users }}</h2>
+                    <p class="mb-0">Usuarios</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-dark text-white shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-md fa-3x mb-3 text-primary"></i>
+                    <h2 class="mb-0">{{ total_professionals }}</h2>
+                    <p class="mb-0">Profesionales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-dark text-white shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user fa-3x mb-3 text-primary"></i>
+                    <h2 class="mb-0">{{ total_clients }}</h2>
+                    <p class="mb-0">Clientes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 bg-dark text-white shadow-sm h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-check fa-3x mb-3 text-primary"></i>
+                    <h2 class="mb-0">{{ total_appointments }}</h2>
+                    <p class="mb-0">Citas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointment Stats -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Estado de Citas</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <div class="p-3 rounded bg-warning bg-opacity-25 mb-2">
+                                <h3>{{ pending_appointments }}</h3>
+                                <p class="mb-0">Pendientes</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="p-3 rounded bg-success bg-opacity-25 mb-2">
+                                <h3>{{ confirmed_appointments }}</h3>
+                                <p class="mb-0">Confirmadas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="p-3 rounded bg-danger bg-opacity-25 mb-2">
+                                <h3>{{ cancelled_appointments }}</h3>
+                                <p class="mb-0">Canceladas</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="p-3 rounded bg-info bg-opacity-25 mb-2">
+                                <h3>{{ completed_appointments }}</h3>
+                                <p class="mb-0">Completadas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Recent Users -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 bg-dark shadow-sm h-100">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Usuarios Recientes</h4>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-primary">Ver Todos</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Registro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                    <tr>
+                                        <td>{{ user.first_name }} {{ user.last_name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            {% if user.role == 'client' %}
+                                                <span class="badge bg-info">Cliente</span>
+                                            {% elif user.role == 'professional' %}
+                                                <span class="badge bg-primary">Profesional</span>
+                                            {% elif user.role == 'admin' %}
+                                                <span class="badge bg-danger">Admin</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.created_at.strftime('%d/%m/%Y') }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Links -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 bg-dark shadow-sm h-100">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">Acciones Rápidas</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-users me-2"></i>Gestionar Usuarios
+                        </a>
+                        <a href="{{ url_for('admin.specialties') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-tags me-2"></i>Gestionar Especialidades
+                        </a>
+                        <a href="{{ url_for('main.search') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-search me-2"></i>Buscar Profesionales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

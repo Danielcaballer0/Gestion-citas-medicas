@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle fa-7x text-primary"></i>
+                    </div>
+                    <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <p class="mb-2"><i class="fas fa-user me-2"></i>{{ user.username }}</p>
+                    {% if user.phone %}
+                        <p class="mb-2"><i class="fas fa-phone me-2"></i>{{ user.phone }}</p>
+                    {% endif %}
+                    {% if is_professional and professional.specialties %}
+                        <div class="mt-3">
+                            <h5>Especialidades</h5>
+                            {% for specialty in professional.specialties %}
+                                <span class="badge bg-primary me-1">{{ specialty.name }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('auth.change_password') }}" class="btn btn-sm btn-outline-primary">
+                            Cambiar Contraseña
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile Form -->
+        <div class="col-md-8">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom">
+                    <h4 class="mb-0">{% if is_professional %}Perfil Profesional{% else %}Perfil de Cliente{% endif %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('professional.profile' if is_professional else 'client.profile') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.first_name.id }}" class="form-label">{{ form.first_name.label }}</label>
+                                {{ form.first_name(class="form-control") }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.last_name.id }}" class="form-label">{{ form.last_name.label }}</label>
+                                {{ form.last_name(class="form-control") }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.phone.id }}" class="form-label">{{ form.phone.label }}</label>
+                            {{ form.phone(class="form-control") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.address.id }}" class="form-label">{{ form.address.label }}</label>
+                            {{ form.address(class="form-control") }}
+                        </div>
+                        
+                        {% if is_professional %}
+                            <div class="mb-3">
+                                <label for="{{ form.bio.id }}" class="form-label">{{ form.bio.label }}</label>
+                                {{ form.bio(class="form-control", rows=4) }}
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="{{ form.years_experience.id }}" class="form-label">{{ form.years_experience.label }}</label>
+                                    {{ form.years_experience(class="form-control") }}
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check mt-4">
+                                        {{ form.accepts_insurance(class="form-check-input") }}
+                                        <label class="form-check-label" for="{{ form.accepts_insurance.id }}">
+                                            {{ form.accepts_insurance.label }}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.specialties.id }}" class="form-label">{{ form.specialties.label }}</label>
+                                {{ form.specialties(class="form-select", multiple="multiple", size="5") }}
+                                <div class="form-text">Mantén presionado Ctrl (Windows) o Command (Mac) para seleccionar múltiples opciones.</div>
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <label for="{{ form.insurance_info.id }}" class="form-label">{{ form.insurance_info.label }}</label>
+                                {{ form.insurance_info(class="form-control") }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mt-4">
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Citas - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Citas</h1>
+        <a href="{{ url_for('professional.dashboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+        </a>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card border-0 bg-dark shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <h5>Filtrar por Fecha</h5>
+                    <div class="btn-group w-100" role="group">
+                        <a href="{{ url_for('professional.appointments', date='upcoming', status=status_filter) }}" 
+                           class="btn btn-outline-primary {{ 'active' if date_filter == 'upcoming' }}">
+                            Próximas
+                        </a>
+                        <a href="{{ url_for('professional.appointments', date='today', status=status_filter) }}" 
+                           class="btn btn-outline-primary {{ 'active' if date_filter == 'today' }}">
+                            Hoy
+                        </a>
+                        <a href="{{ url_for('professional.appointments', date='past', status=status_filter) }}" 
+                           class="btn btn-outline-primary {{ 'active' if date_filter == 'past' }}">
+                            Pasadas
+                        </a>
+                        <a href="{{ url_for('professional.appointments', date='all', status=status_filter) }}" 
+                           class="btn btn-outline-primary {{ 'active' if date_filter == 'all' }}">
+                            Todas
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Filtrar por Estado</h5>
+                    <div class="btn-group w-100" role="group">
+                        <a href="{{ url_for('professional.appointments', status='all', date=date_filter) }}" 
+                           class="btn btn-outline-primary {{ 'active' if status_filter == 'all' }}">
+                            Todas
+                        </a>
+                        <a href="{{ url_for('professional.appointments', status='pending', date=date_filter) }}" 
+                           class="btn btn-outline-warning {{ 'active' if status_filter == 'pending' }}">
+                            Pendientes
+                        </a>
+                        <a href="{{ url_for('professional.appointments', status='confirmed', date=date_filter) }}" 
+                           class="btn btn-outline-success {{ 'active' if status_filter == 'confirmed' }}">
+                            Confirmadas
+                        </a>
+                        <a href="{{ url_for('professional.appointments', status='cancelled', date=date_filter) }}" 
+                           class="btn btn-outline-danger {{ 'active' if status_filter == 'cancelled' }}">
+                            Canceladas
+                        </a>
+                        <a href="{{ url_for('professional.appointments', status='completed', date=date_filter) }}" 
+                           class="btn btn-outline-info {{ 'active' if status_filter == 'completed' }}">
+                            Completadas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Appointments List -->
+    <div class="card border-0 bg-dark shadow-sm">
+        <div class="card-header bg-dark border-bottom">
+            <h4 class="mb-0">Lista de Citas</h4>
+        </div>
+        <div class="card-body">
+            {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-dark">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Estado</th>
+                                <th>Notas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                                <tr>
+                                    <td>{{ appointment.client.user.get_full_name() }}</td>
+                                    <td>{{ appointment.date.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</td>
+                                    <td>
+                                        {% if appointment.status == 'pending' %}
+                                            <span class="badge bg-warning">Pendiente</span>
+                                        {% elif appointment.status == 'confirmed' %}
+                                            <span class="badge bg-success">Confirmada</span>
+                                        {% elif appointment.status == 'cancelled' %}
+                                            <span class="badge bg-danger">Cancelada</span>
+                                        {% elif appointment.status == 'completed' %}
+                                            <span class="badge bg-info">Completada</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ appointment.notes|truncate(30) if appointment.notes else '-' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('professional.update_appointment', appointment_id=appointment.id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Actualizar
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No se encontraron citas que coincidan con los filtros seleccionados.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

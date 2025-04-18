@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservar Cita - {{ professional_user.first_name }} {{ professional_user.last_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>Reservar Cita</h1>
+            <h4 class="text-secondary">{{ professional_user.first_name }} {{ professional_user.last_name }}</h4>
+            
+            {% if professional.specialties %}
+                <div class="mb-3">
+                    {% for specialty in professional.specialties %}
+                        <span class="badge bg-primary me-1">{{ specialty.name }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('main.professional_profile', professional_id=professional.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Volver al Perfil
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Availability Calendar -->
+        <div class="col-lg-8">
+            <div class="card border-0 bg-dark shadow-sm mb-4">
+                <div class="card-header bg-dark">
+                    <h4 class="mb-0">Disponibilidad</h4>
+                </div>
+                <div class="card-body">
+                    {% if available_days %}
+                        <ul class="nav nav-tabs mb-4" id="availabilityTabs" role="tablist">
+                            {% for day_data in available_days %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {{ 'active' if loop.first else '' }}" 
+                                            id="day-tab-{{ loop.index }}" 
+                                            data-bs-toggle="tab" 
+                                            data-bs-target="#day-{{ loop.index }}" 
+                                            type="button" 
+                                            role="tab" 
+                                            aria-controls="day-{{ loop.index }}" 
+                                            aria-selected="{{ 'true' if loop.first else 'false' }}">
+                                        {{ day_data.date.strftime('%d/%m') }}
+                                        <span class="d-none d-md-inline">{{ day_data.date.strftime('%a') }}</span>
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="tab-content" id="availabilityTabContent">
+                            {% for day_data in available_days %}
+                                <div class="tab-pane fade {{ 'show active' if loop.first else '' }}" 
+                                     id="day-{{ loop.index }}" 
+                                     role="tabpanel" 
+                                     aria-labelledby="day-tab-{{ loop.index }}">
+                                    
+                                    <h5 class="mb-3">{{ day_data.date.strftime('%A, %d de %B de %Y') }}</h5>
+                                    
+                                    <div class="row row-cols-2 row-cols-md-4 g-3">
+                                        {% for slot in day_data.slots %}
+                                            <div class="col">
+                                                <button type="button" 
+                                                        class="btn btn-outline-primary w-100 time-slot-btn"
+                                                        data-date="{{ day_data.date.strftime('%Y-%m-%d') }}"
+                                                        data-start="{{ slot.start.strftime('%H:%M') }}"
+                                                        data-end="{{ slot.end.strftime('%H:%M') }}">
+                                                    {{ slot.start.strftime('%H:%M') }} - {{ slot.end.strftime('%H:%M') }}
+                                                </button>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No hay horarios disponibles en los próximos días.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Booking Form -->
+        <div class="col-lg-4">
+            <div class="card border-0 bg-dark shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-dark">
+                    <h4 class="mb-0">Confirmar Cita</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('client.book_appointment', professional_id=professional.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.date.id }}" class="form-label">{{ form.date.label }}</label>
+                            {{ form.date(class="form-control", required=true) }}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label for="{{ form.start_time.id }}" class="form-label">{{ form.start_time.label }}</label>
+                                {{ form.start_time(class="form-control", required=true) }}
+                            </div>
+                            <div class="col-6">
+                                <label for="{{ form.end_time.id }}" class="form-label">{{ form.end_time.label }}</label>
+                                {{ form.end_time(class="form-control", required=true) }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.notes.id }}" class="form-label">{{ form.notes.label }}</label>
+                            {{ form.notes(class="form-control", rows=3, placeholder="Detalles adicionales para el profesional") }}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary", id="submit-btn") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select time slot buttons
+        const timeSlotButtons = document.querySelectorAll('.time-slot-btn');
+        const dateInput = document.getElementById('{{ form.date.id }}');
+        const startTimeInput = document.getElementById('{{ form.start_time.id }}');
+        const endTimeInput = document.getElementById('{{ form.end_time.id }}');
+        
+        timeSlotButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Reset all buttons
+                timeSlotButtons.forEach(btn => btn.classList.replace('btn-primary', 'btn-outline-primary'));
+                
+                // Highlight selected button
+                this.classList.replace('btn-outline-primary', 'btn-primary');
+                
+                // Update form values
+                dateInput.value = this.dataset.date;
+                startTimeInput.value = this.dataset.start;
+                endTimeInput.value = this.dataset.end;
+            });
+        });
+    });
+</script>
+{% endblock %}

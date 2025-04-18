@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Actualizar Cita - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Actualizar Estado de Cita</h4>
+                    <a href="{{ url_for('professional.appointments') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver a Citas
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Cliente:</strong> {{ appointment.client.user.get_full_name() }}</p>
+                                <p><strong>Email:</strong> {{ appointment.client.user.email }}</p>
+                                <p><strong>Teléfono:</strong> {{ appointment.client.user.phone or 'No disponible' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Fecha:</strong> {{ appointment.date.strftime('%d/%m/%Y') }}</p>
+                                <p><strong>Hora:</strong> {{ appointment.start_time.strftime('%H:%M') }} - {{ appointment.end_time.strftime('%H:%M') }}</p>
+                                <p><strong>Estado actual:</strong> 
+                                    {% if appointment.status == 'pending' %}
+                                        <span class="badge bg-warning">Pendiente</span>
+                                    {% elif appointment.status == 'confirmed' %}
+                                        <span class="badge bg-success">Confirmada</span>
+                                    {% elif appointment.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelada</span>
+                                    {% elif appointment.status == 'completed' %}
+                                        <span class="badge bg-info">Completada</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('professional.update_appointment', appointment_id=appointment.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.status.id }}" class="form-label">{{ form.status.label }}</label>
+                            {{ form.status(class="form-select") }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id }}" class="form-label">{{ form.notes.label }}</label>
+                            {{ form.notes(class="form-control", rows=3) }}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('professional.appointments') }}" class="btn btn-outline-secondary">Cancelar</a>
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Nota:</strong> Al actualizar el estado de la cita, se enviará una notificación por correo electrónico al cliente.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
