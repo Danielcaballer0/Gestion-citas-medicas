@@ -4,32 +4,62 @@
 
 {% block content %}
 <div class="container">
+    <h1 class="mb-4">Bienvenido, {{ user.first_name }} {{ user.last_name }}</h1>
+    
     <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-4 mb-4">
-            <div class="card border-0 bg-dark shadow-sm">
+        <!-- User Info -->
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 bg-dark shadow-sm mb-4">
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <i class="fas fa-user-circle fa-7x text-primary"></i>
-                    </div>
-                    <h3>{{ user.first_name }} {{ user.last_name }}</h3>
-                    <p class="text-muted">{{ user.email }}</p>
-                    <p class="mb-2"><i class="fas fa-user me-2"></i>{{ user.username }}</p>
-                    {% if user.phone %}
-                        <p class="mb-2"><i class="fas fa-phone me-2"></i>{{ user.phone }}</p>
-                    {% endif %}
-                    {% if is_professional and professional.specialties %}
-                        <div class="mt-3">
-                            <h5>Especialidades</h5>
-                            {% for specialty in professional.specialties %}
-                                <span class="badge bg-primary me-1">{{ specialty.name }}</span>
-                            {% endfor %}
+                        <div class="avatar-circle mx-auto" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user-circle fa-4x text-info"></i>
                         </div>
-                    {% endif %}
-                    <div class="mt-3">
-                        <a href="{{ url_for('auth.change_password') }}" class="btn btn-sm btn-outline-primary">
-                            Cambiar Contraseña
-                        </a>
+                    </div>
+                    <h4>{{ user.first_name }} {{ user.last_name }}</h4>
+                    <p class="text-muted mb-1">{{ "Paciente" if not is_professional else "Profesional" }}</p>
+                </div>
+            </div>
+            
+            <!-- Panel de navegación -->
+            <div class="list-group mb-4">
+                <a href="{{ url_for('main.index') }}" class="list-group-item list-group-item-action bg-primary">
+                    <i class="fas fa-home me-2"></i> Panel
+                </a>
+                <a href="{{ url_for('client.profile' if not is_professional else 'professional.profile') }}" class="list-group-item list-group-item-action bg-dark active">
+                    <i class="fas fa-user me-2"></i> Mi Perfil
+                </a>
+                <a href="{{ url_for('client.my_appointments' if not is_professional else 'professional.appointments') }}" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-calendar me-2"></i> Mis Citas
+                </a>
+                <a href="{{ url_for('main.search') }}" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-search me-2"></i> Buscar Médicos
+                </a>
+            </div>
+            
+            <!-- Calendario -->
+            <div class="card border-0 bg-dark shadow-sm">
+                <div class="card-header bg-dark border-bottom">
+                    <h5 class="mb-0">Calendario</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <h5 class="text-primary">April 2025</h5>
+                        <div class="d-flex justify-content-center">
+                            <span class="badge bg-primary">today</span>
+                        </div>
+                        <table class="table table-sm table-dark small mt-2">
+                            <thead>
+                                <tr>
+                                    <th>L</th><th>M</th><th>X</th><th>J</th><th>V</th><th>S</th><th>D</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>30</td><td>31</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

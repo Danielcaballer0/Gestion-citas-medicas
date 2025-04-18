@@ -4,13 +4,62 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">Mis Citas</h1>
+    <h1 class="mb-4">Bienvenido, {{ current_user.first_name }} {{ current_user.last_name }}</h1>
     
     <div class="row">
-        <!-- Upcoming Appointments -->
-        <div class="col-md-12 mb-4">
-            <div class="card border-0 bg-dark shadow-sm">
+        <!-- User Info -->
+        <div class="col-md-3 mb-4">
+            <div class="card border-0 bg-dark shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="avatar-circle mx-auto" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user-circle fa-4x text-info"></i>
+                        </div>
+                    </div>
+                    <h4>{{ current_user.first_name }} {{ current_user.last_name }}</h4>
+                    <p class="text-muted mb-1">{{ "Paciente" if current_user.is_client() else "Profesional" }}</p>
+                </div>
+            </div>
+            
+            <!-- Panel de navegación -->
+            <div class="list-group mb-4">
+                <a href="{{ url_for('main.index') }}" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-home me-2"></i> Panel
+                </a>
+                <a href="{{ url_for('client.profile' if current_user.is_client() else 'professional.profile') }}" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-user me-2"></i> Mi Perfil
+                </a>
+                <a href="{{ url_for('client.my_appointments' if current_user.is_client() else 'professional.appointments') }}" class="list-group-item list-group-item-action bg-primary active">
+                    <i class="fas fa-calendar me-2"></i> Mis Citas
+                </a>
+                <a href="{{ url_for('main.search') }}" class="list-group-item list-group-item-action bg-dark">
+                    <i class="fas fa-search me-2"></i> Buscar Médicos
+                </a>
+            </div>
+            
+            <!-- Acciones Rápidas -->
+            <div class="card border-0 bg-dark shadow-sm mb-4">
                 <div class="card-header bg-dark border-bottom">
+                    <h5 class="mb-0">Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.search') }}" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus me-2"></i> Nueva Cita
+                        </a>
+                        <a href="{{ url_for('main.search') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list me-2"></i> Ver Todas las Citas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <!-- Upcoming Appointments -->
+            <div class="card border-0 bg-dark shadow-sm mb-4">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Próximas Citas</h4>
                 </div>
                 <div class="card-body">
@@ -89,9 +138,9 @@
         </div>
         
         <!-- Past Appointments -->
-        <div class="col-md-12">
+        <div class="col-md-9 ms-auto">
             <div class="card border-0 bg-dark shadow-sm">
-                <div class="card-header bg-dark border-bottom">
+                <div class="card-header bg-dark border-bottom d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Historial de Citas</h4>
                 </div>
                 <div class="card-body">
