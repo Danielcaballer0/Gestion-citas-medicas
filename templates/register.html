@@ -2,6 +2,29 @@
 
 {% block title %}Registro - Gestor de Citas{% endblock %}
 
+{% block extra_js %}
+<script>
+function toggleSpecialtyField() {
+    // Obtener el elemento select de rol
+    const roleSelect = document.getElementById('roleSelect');
+    // Obtener el div que contiene el campo de especialidad
+    const specialtyField = document.getElementById('specialtyField');
+    
+    // Mostrar u ocultar el campo de especialidad dependiendo del rol seleccionado
+    if (roleSelect.value === 'professional') {
+        specialtyField.style.display = 'block';
+    } else {
+        specialtyField.style.display = 'none';
+    }
+}
+
+// Ejecutar la función al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    toggleSpecialtyField();
+});
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
