@@ -4,6 +4,13 @@ class Config:
     SECRET_KEY = os.environ.get("SESSION_SECRET", "dev-secret-key")
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "pool_timeout": 30,
+        "pool_size": 10,
+        "max_overflow": 20
+    }
     
     # Email configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')

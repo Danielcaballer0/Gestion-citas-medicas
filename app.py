@@ -72,4 +72,10 @@ def internal_server_error(e):
 @login_manager.user_loader
 def load_user(user_id):
     from models import User
-    return User.query.get(int(user_id))
+    from sqlalchemy.exc import PendingRollbackError
+    try:
+        return User.query.get(int(user_id))
+    except PendingRollbackError:
+        # Si hay una transacción pendiente, hacemos rollback y reintentamos
+        db.session.rollback()
+        return User.query.get(int(user_id))
