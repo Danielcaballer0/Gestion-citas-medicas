@@ -133,3 +133,69 @@ footer {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+/* Avatar circle for professional listings */
+.avatar-circle {
+    width: 70px;
+    height: 70px;
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Color classes for specialty icons */
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+.text-pink {
+    color: #e83e8c !important;
+}
+
+.text-teal {
+    color: #20c997 !important;
+}
+
+/* Search page specialty icons */
+.speciality-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Explore specialties section */
+.specialty-explore-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Panel styling for dashboard */
+.panel-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.panel-link:hover {
+    color: inherit;
+}
+
+.panel-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 15px;
+}

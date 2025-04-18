@@ -4,69 +4,71 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">Buscar Profesionales</h1>
+    <h1 class="mb-4">Buscar un Médico</h1>
     
     <!-- Search Form -->
-    <div class="card border-0 bg-dark shadow-sm mb-4">
-        <div class="card-body">
+    <div class="card border-0 bg-dark shadow-sm mb-5">
+        <div class="card-body p-4">
             <form method="GET" action="{{ url_for('main.search') }}" class="row g-3">
-                <div class="col-md-6">
-                    <label for="{{ form.specialty.id }}" class="form-label">{{ form.specialty.label }}</label>
+                <div class="col-12">
+                    <label for="{{ form.specialty.id }}" class="form-label">Filtrar por Especialidad</label>
                     {{ form.specialty(class="form-select") }}
                 </div>
-                <div class="col-md-4">
-                    <label for="{{ form.date.id }}" class="form-label">{{ form.date.label }} <small class="text-muted">(Opcional)</small></label>
-                    {{ form.date(class="form-control", type="date") }}
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    {{ form.submit(class="btn btn-primary w-100") }}
+                <div class="col-12 d-flex">
+                    <button type="submit" class="btn btn-primary px-4 ms-auto">
+                        <i class="fas fa-search me-2"></i> Buscar
+                    </button>
                 </div>
             </form>
         </div>
     </div>
     
     <!-- Results -->
-    <div class="row">
-        {% if results %}
+    {% if results %}
+        <div class="mb-5">
             {% for professional, user in results %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 border-0 bg-dark shadow-sm">
-                        <div class="card-body">
-                            <div class="text-center mb-3">
-                                <i class="fas fa-user-md fa-5x text-primary"></i>
-                            </div>
-                            <h5 class="card-title text-center">{{ user.first_name }} {{ user.last_name }}</h5>
-                            
-                            {% if professional.specialties %}
-                                <div class="mb-3 text-center">
-                                    {% for specialty in professional.specialties %}
-                                        <span class="badge bg-primary me-1">{{ specialty.name }}</span>
-                                    {% endfor %}
+                <div class="card mb-4 border-0 bg-dark shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center">
+                            <div class="me-4">
+                                <div class="avatar-circle">
+                                    <i class="fas fa-user-md fa-3x text-primary"></i>
                                 </div>
-                            {% endif %}
-                            
-                            <div class="small mb-3">
-                                {% if professional.years_experience %}
-                                    <p class="mb-1"><i class="fas fa-briefcase me-2"></i>{{ professional.years_experience }} años de experiencia</p>
-                                {% endif %}
-                                
-                                {% if professional.accepts_insurance %}
-                                    <p class="mb-1"><i class="fas fa-check-circle me-2 text-success"></i>Acepta seguros</p>
-                                {% endif %}
-                                
-                                {% if professional.schedules %}
-                                    <p class="mb-1"><i class="fas fa-calendar-alt me-2"></i>{{ professional.schedules|length }} días disponibles</p>
-                                {% endif %}
                             </div>
-                            
-                            <div class="d-grid gap-2">
-                                <a href="{{ url_for('main.professional_profile', professional_id=professional.id) }}" 
-                                   class="btn btn-outline-primary">Ver Perfil</a>
-                                   
-                                {% if current_user.is_authenticated and current_user.is_client() %}
-                                    <a href="{{ url_for('client.book_appointment', professional_id=professional.id) }}" 
-                                       class="btn btn-primary">Reservar Cita</a>
+                            <div class="flex-grow-1">
+                                <h3 class="mb-1">Dr. {{ user.first_name }} {{ user.last_name }}</h3>
+                                
+                                {% if professional.specialties %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        {% for specialty in professional.specialties %}
+                                            <span class="badge bg-info text-dark me-2">{{ specialty.name }}</span>
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
+                                
+                                <div class="small text-muted">
+                                    {% if professional.bio %}
+                                        {{ professional.bio|truncate(100) }}
+                                    {% else %}
+                                        {% if professional.years_experience %}
+                                            Especialista con {{ professional.years_experience }} años de experiencia.
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ms-auto text-center">
+                                <div class="d-flex flex-column">
+                                    <span class="text-info mb-2"><i class="fas fa-clock me-1"></i> {{ professional.schedules|length * 8 }} horarios disponibles</span>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('main.professional_profile', professional_id=professional.id) }}" 
+                                           class="btn btn-outline-secondary btn-sm">Ver Perfil</a>
+                                        
+                                        {% if current_user.is_authenticated and current_user.is_client() %}
+                                            <a href="{{ url_for('client.book_appointment', professional_id=professional.id) }}" 
+                                               class="btn btn-primary btn-sm">Programar Cita</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

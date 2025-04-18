@@ -25,57 +25,99 @@
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="py-5">
-        <h2 class="text-center mb-5">¿Por qué elegirnos?</h2>
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 bg-dark">
-                    <div class="card-body text-center">
-                        <i class="fas fa-search fa-3x mb-3 text-primary"></i>
-                        <h4 class="card-title">Encuentra profesionales</h4>
-                        <p class="card-text">Busca profesionales según especialidad y disponibilidad de horarios.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 bg-dark">
-                    <div class="card-body text-center">
-                        <i class="fas fa-calendar-alt fa-3x mb-3 text-primary"></i>
-                        <h4 class="card-title">Agenda fácilmente</h4>
-                        <p class="card-text">Visualiza la disponibilidad y reserva citas con unos pocos clics.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 border-0 bg-dark">
-                    <div class="card-body text-center">
-                        <i class="fas fa-bell fa-3x mb-3 text-primary"></i>
-                        <h4 class="card-title">Notificaciones</h4>
-                        <p class="card-text">Recibe confirmaciones y recordatorios de tus citas programadas.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Specialties Section -->
     <section class="py-5">
         <h2 class="text-center mb-5">Especialidades Disponibles</h2>
-        <div class="row row-cols-2 row-cols-md-4 g-4">
-            {% for specialty in specialties %}
-                <div class="col">
-                    <div class="card h-100 text-center border-0 bg-dark">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ specialty.name }}</h5>
-                            <p class="card-text small">{{ specialty.description|truncate(60) }}</p>
-                            <a href="{{ url_for('main.search', specialty=specialty.id) }}" class="btn btn-sm btn-outline-primary">
-                                Ver Profesionales
-                            </a>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="speciality-icon text-danger">
+                            <i class="fas fa-heartbeat fa-2x"></i>
                         </div>
+                        <h4 class="ms-3 mb-0">Cardiología</h4>
+                    </div>
+                    <p class="text-muted">Atención especializada para condiciones cardíacas por cardiólogos experimentados.</p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('main.search', specialty=1) }}" class="btn btn-outline-primary btn-sm">Buscar un Cardiólogo</a>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="speciality-icon text-info">
+                            <i class="fas fa-brain fa-2x"></i>
+                        </div>
+                        <h4 class="ms-3 mb-0">Neurología</h4>
+                    </div>
+                    <p class="text-muted">Tratamiento experto para trastornos y condiciones neurológicas.</p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('main.search', specialty=4) }}" class="btn btn-outline-primary btn-sm">Buscar un Neurólogo</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="speciality-icon text-warning">
+                            <i class="fas fa-bone fa-2x"></i>
+                        </div>
+                        <h4 class="ms-3 mb-0">Ortopedia</h4>
+                    </div>
+                    <p class="text-muted">Atención integral para huesos, articulaciones y problemas musculoesqueléticos.</p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('main.search', specialty=8) }}" class="btn btn-outline-primary btn-sm">Buscar un Ortopedista</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="speciality-icon text-purple">
+                            <i class="fas fa-child fa-2x"></i>
+                        </div>
+                        <h4 class="ms-3 mb-0">Pediatría</h4>
+                    </div>
+                    <p class="text-muted">Atención médica especializada para bebés, niños y adolescentes.</p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('main.search', specialty=3) }}" class="btn btn-outline-primary btn-sm">Buscar un Pediatra</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="speciality-icon text-success">
+                            <i class="fas fa-eye fa-2x"></i>
+                        </div>
+                        <h4 class="ms-3 mb-0">Oftalmología</h4>
+                    </div>
+                    <p class="text-muted">Servicios y tratamientos integrales para el cuidado de los ojos.</p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('main.search', specialty=5) }}" class="btn btn-outline-primary btn-sm">Buscar un Oftalmólogo</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 bg-dark p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="speciality-icon text-pink">
+                            <i class="fas fa-female fa-2x"></i>
+                        </div>
+                        <h4 class="ms-3 mb-0">Obstetricia y Ginecología</h4>
+                    </div>
+                    <p class="text-muted">Atención especializada para la salud de la mujer y problemas reproductivos.</p>
+                    <div class="mt-auto">
+                        <a href="{{ url_for('main.search', specialty=6) }}" class="btn btn-outline-primary btn-sm">Buscar un Ginecólogo</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
