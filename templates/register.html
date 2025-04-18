@@ -103,12 +103,24 @@
                             </div>
                         </div>
                         
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label for="{{ form.role.id }}" class="form-label">{{ form.role.label }}</label>
-                            {{ form.role(class="form-select") }}
+                            {{ form.role(class="form-select", id="roleSelect", onchange="toggleSpecialtyField()") }}
                             {% if form.role.errors %}
                                 <div class="invalid-feedback d-block">
                                     {% for error in form.role.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4" id="specialtyField" style="display: none;">
+                            <label for="{{ form.specialty.id }}" class="form-label">{{ form.specialty.label }}</label>
+                            {{ form.specialty(class="form-select") }}
+                            {% if form.specialty.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.specialty.errors %}
                                         {{ error }}
                                     {% endfor %}
                                 </div>

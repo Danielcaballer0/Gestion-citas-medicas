@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
 from datetime import datetime
 from app import db
-from models import User, Professional, Client
+from models import User, Professional, Client, Specialty
 from forms import LoginForm, RegistrationForm, ChangePasswordForm
 
 auth_bp = Blueprint('auth', __name__)
@@ -46,7 +46,15 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     
+    # Obtenemos todas las especialidades para el formulario
+    specialties = Specialty.query.order_by(Specialty.name).all()
+    
+    # Preparamos las opciones para el dropdown de especialidades
+    specialty_choices = [(0, 'Seleccione una especialidad')] + [(s.id, s.name) for s in specialties]
+    
     form = RegistrationForm()
+    form.specialty.choices = specialty_choices
+    
     if form.validate_on_submit():
         user = User(
             username=form.username.data,
@@ -64,6 +72,13 @@ def register():
         # Create professional or client profile based on role
         if user.role == 'professional':
             professional = Professional(user_id=user.id)
+            
+            # Si se seleccionó una especialidad (diferente de 0), asignarla al profesional
+            if form.specialty.data and form.specialty.data > 0:
+                specialty = Specialty.query.get(form.specialty.data)
+                if specialty:
+                    professional.specialties.append(specialty)
+            
             db.session.add(professional)
         else:
             client = Client(user_id=user.id)
