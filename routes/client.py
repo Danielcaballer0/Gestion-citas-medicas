@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from app import db
 from models import User, Client, Professional, Appointment, Specialty
 from forms import ClientProfileForm, AppointmentForm, SearchForm
 from utils import get_available_slots, send_confirmation_email, get_upcoming_appointments
+from stripe_utils import create_checkout_session, refund_payment
 
 client_bp = Blueprint('client', __name__)
 
@@ -167,6 +168,13 @@ def cancel_appointment(appointment_id):
         flash('No se pueden cancelar citas pasadas', 'danger')
         return redirect(url_for('client.my_appointments'))
     
+    # Process refund if payment was made
+    if appointment.payment_status == 'paid' and appointment.payment_id:
+        if refund_payment(appointment.id):
+            flash('El pago ha sido reembolsado correctamente', 'success')
+        else:
+            flash('No se pudo procesar el reembolso automáticamente. Contacte a soporte.', 'warning')
+    
     appointment.status = 'cancelled'
     db.session.commit()
     
@@ -174,4 +182,78 @@ def cancel_appointment(appointment_id):
     send_confirmation_email(appointment)
     
     flash('Cita cancelada exitosamente', 'success')
+    return redirect(url_for('client.my_appointments'))
+
+@client_bp.route('/pay_appointment/<int:appointment_id>')
+@login_required
+def pay_appointment(appointment_id):
+    """Process payment for an appointment"""
+    if not current_user.is_client():
+        flash('No tienes permisos para acceder a esta página', 'danger')
+        return redirect(url_for('main.index'))
+    
+    appointment = Appointment.query.get_or_404(appointment_id)
+    client = Client.query.filter_by(user_id=current_user.id).first()
+    
+    if appointment.client_id != client.id:
+        flash('No tienes permiso para pagar esta cita', 'danger')
+        return redirect(url_for('client.my_appointments'))
+    
+    # Check if appointment is already paid
+    if appointment.payment_status == 'paid':
+        flash('Esta cita ya ha sido pagada', 'info')
+        return redirect(url_for('client.my_appointments'))
+    
+    # Check if appointment is cancelled
+    if appointment.status == 'cancelled':
+        flash('No se puede pagar una cita cancelada', 'danger')
+        return redirect(url_for('client.my_appointments'))
+    
+    # Create Stripe checkout session
+    checkout_url = create_checkout_session(appointment.id)
+    
+    if checkout_url:
+        return redirect(checkout_url)
+    else:
+        flash('Error al procesar el pago. Por favor intente nuevamente.', 'danger')
+        return redirect(url_for('client.my_appointments'))
+
+@client_bp.route('/payment/success/<int:appointment_id>')
+@login_required
+def payment_success(appointment_id):
+    """Handle successful payment"""
+    if not current_user.is_client():
+        flash('No tienes permisos para acceder a esta página', 'danger')
+        return redirect(url_for('main.index'))
+    
+    appointment = Appointment.query.get_or_404(appointment_id)
+    client = Client.query.filter_by(user_id=current_user.id).first()
+    
+    if appointment.client_id != client.id:
+        flash('No tienes permiso para ver esta información', 'danger')
+        return redirect(url_for('client.my_appointments'))
+    
+    # Update appointment status (this is normally done via webhook but serves as a fallback)
+    if appointment.payment_status != 'paid':
+        appointment.payment_status = 'paid'
+        appointment.payment_timestamp = datetime.utcnow()
+        # If appointment was pending, set it to confirmed upon payment
+        if appointment.status == 'pending':
+            appointment.status = 'confirmed'
+        db.session.commit()
+    
+    flash('Pago procesado correctamente. Gracias por tu reserva.', 'success')
+    return redirect(url_for('client.my_appointments'))
+
+@client_bp.route('/payment/cancel/<int:appointment_id>')
+@login_required
+def payment_cancel(appointment_id):
+    """Handle cancelled payment"""
+    if not current_user.is_client():
+        flash('No tienes permisos para acceder a esta página', 'danger')
+        return redirect(url_for('main.index'))
+    
+    appointment = Appointment.query.get_or_404(appointment_id)
+    
+    flash('El proceso de pago ha sido cancelado. Puedes intentarlo nuevamente más tarde.', 'info')
     return redirect(url_for('client.my_appointments'))

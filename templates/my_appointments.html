@@ -112,6 +112,19 @@
                                                     </a>
                                                     
                                                     {% if appointment.status != 'cancelled' %}
+                                                        <!-- Payment Button -->
+                                                        {% if appointment.payment_status != 'paid' and config.ENABLE_PAYMENT %}
+                                                            <a href="{{ url_for('client.pay_appointment', appointment_id=appointment.id) }}"
+                                                              class="btn btn-sm btn-outline-success me-2" title="Realizar pago">
+                                                                <i class="fas fa-credit-card"></i>
+                                                            </a>
+                                                        {% elif appointment.payment_status == 'paid' %}
+                                                            <span class="badge bg-success me-2" title="Pago realizado">
+                                                                <i class="fas fa-check"></i> Pagado
+                                                            </span>
+                                                        {% endif %}
+                                                        
+                                                        <!-- Cancel Button -->
                                                         <form method="POST" action="{{ url_for('client.cancel_appointment', appointment_id=appointment.id) }}"
                                                               onsubmit="return confirm('¿Estás seguro de que deseas cancelar esta cita?');">
                                                             <button type="submit" class="btn btn-sm btn-outline-danger">

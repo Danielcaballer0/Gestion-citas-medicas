@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Pago Exitoso - Gestor de Citas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card border-0 bg-dark shadow">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success fa-5x"></i>
+                    </div>
+                    <h2 class="mb-4">¡Pago Realizado con Éxito!</h2>
+                    <p class="lead mb-4">
+                        Gracias por tu pago. Tu cita ha sido confirmada correctamente.
+                    </p>
+                    <p class="mb-4">
+                        Se ha enviado un correo electrónico con los detalles de tu cita a la dirección de correo registrada.
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('client.my_appointments') }}" class="btn btn-primary me-2">
+                            <i class="fas fa-calendar me-2"></i>
+                            Ver Mis Citas
+                        </a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-home me-2"></i>
+                            Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
