@@ -1,11 +1,17 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, session
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
+import json
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from app import db
 from models import User, Client, Professional, Appointment, Specialty
 from forms import ClientProfileForm, AppointmentForm, SearchForm
 from utils import get_available_slots, send_confirmation_email, get_upcoming_appointments
 from stripe_utils import create_checkout_session, refund_payment
+from google_calendar_utils import get_auth_url, add_appointment_to_calendar, get_credentials
 
 client_bp = Blueprint('client', __name__)
 
@@ -256,4 +262,92 @@ def payment_cancel(appointment_id):
     appointment = Appointment.query.get_or_404(appointment_id)
     
     flash('El proceso de pago ha sido cancelado. Puedes intentarlo nuevamente más tarde.', 'info')
+    return redirect(url_for('client.my_appointments'))
+
+@client_bp.route('/google/authorize')
+@login_required
+def authorize():
+    """Authorize Google Calendar access"""
+    if not current_user.is_client():
+        flash('No tienes permisos para acceder a esta página', 'danger')
+        return redirect(url_for('main.index'))
+    
+    # Get the authorization URL
+    auth_url = get_auth_url()
+    
+    if not auth_url:
+        flash('Error al conectar con Google Calendar. Por favor intente nuevamente.', 'danger')
+        return redirect(url_for('client.my_appointments'))
+    
+    return redirect(auth_url)
+
+@client_bp.route('/google/oauth2callback')
+@login_required
+def oauth2callback():
+    """Callback from Google OAuth2"""
+    if not current_user.is_client():
+        flash('No tienes permisos para acceder a esta página', 'danger')
+        return redirect(url_for('main.index'))
+    
+    # Specify the state when creating the flow in the callback so that it can
+    # verified in the authorization server response.
+    state = session['state']
+    
+    try:
+        flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+            'client_secret.json',
+            scopes=['https://www.googleapis.com/auth/calendar'],
+            state=state)
+        flow.redirect_uri = url_for('client.oauth2callback', _external=True)
+        
+        # Use the authorization server's response to fetch the OAuth 2.0 tokens.
+        authorization_response = request.url
+        flow.fetch_token(authorization_response=authorization_response)
+        
+        # Store credentials in the session.
+        credentials = flow.credentials
+        session['credentials'] = {
+            'token': credentials.token,
+            'refresh_token': credentials.refresh_token,
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': credentials.scopes
+        }
+        
+        flash('Conectado exitosamente a Google Calendar!', 'success')
+        return redirect(url_for('client.my_appointments'))
+    except Exception as e:
+        flash(f'Error al conectar con Google Calendar: {str(e)}', 'danger')
+        return redirect(url_for('client.my_appointments'))
+
+@client_bp.route('/google/sync_appointment/<int:appointment_id>')
+@login_required
+def sync_appointment(appointment_id):
+    """Sync an appointment with Google Calendar"""
+    if not current_user.is_client():
+        flash('No tienes permisos para acceder a esta página', 'danger')
+        return redirect(url_for('main.index'))
+    
+    # Check if user has Google Calendar connected
+    if not get_credentials():
+        flash('Necesitas conectar tu cuenta de Google Calendar primero', 'warning')
+        return redirect(url_for('client.authorize'))
+    
+    # Get the appointment
+    appointment = Appointment.query.get_or_404(appointment_id)
+    client = Client.query.filter_by(user_id=current_user.id).first()
+    
+    if appointment.client_id != client.id:
+        flash('No tienes permiso para sincronizar esta cita', 'danger')
+        return redirect(url_for('client.my_appointments'))
+    
+    # Add the appointment to Google Calendar
+    event = add_appointment_to_calendar(appointment.id)
+    
+    if event:
+        flash('Cita sincronizada exitosamente con Google Calendar', 'success')
+    else:
+        flash('Error al sincronizar la cita con Google Calendar', 'danger')
+    
     return redirect(url_for('client.my_appointments'))

@@ -47,6 +47,12 @@
                         <a href="{{ url_for('main.search') }}" class="btn btn-primary">
                             <i class="fas fa-calendar-plus me-2"></i> Nueva Cita
                         </a>
+                        
+                        <!-- Google Calendar Integration -->
+                        <a href="{{ url_for('client.authorize') }}" class="btn btn-info">
+                            <i class="fab fa-google me-2"></i> Conectar Google Calendar
+                        </a>
+                        
                         <a href="{{ url_for('main.search') }}" class="btn btn-outline-primary">
                             <i class="fas fa-list me-2"></i> Ver Todas las Citas
                         </a>
@@ -123,6 +129,12 @@
                                                                 <i class="fas fa-check"></i> Pagado
                                                             </span>
                                                         {% endif %}
+                                                        
+                                                        <!-- Google Calendar Sync Button -->
+                                                        <a href="{{ url_for('client.sync_appointment', appointment_id=appointment.id) }}"
+                                                           class="btn btn-sm btn-outline-primary me-2" title="Sincronizar con Google Calendar">
+                                                            <i class="fas fa-calendar-plus"></i>
+                                                        </a>
                                                         
                                                         <!-- Cancel Button -->
                                                         <form method="POST" action="{{ url_for('client.cancel_appointment', appointment_id=appointment.id) }}"
