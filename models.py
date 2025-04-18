@@ -110,6 +110,14 @@ class Appointment(db.Model):
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
+    # Payment information
+    cost = db.Column(db.Float, default=50.0)  # Default cost in currency units
+    payment_status = db.Column(db.String(20), default='pending')  # pending, paid, refunded, failed
+    payment_id = db.Column(db.String(100))  # Stripe payment/checkout session ID
+    payment_timestamp = db.Column(db.DateTime)  # When the payment was processed
+    refund_id = db.Column(db.String(100))  # Stripe refund ID
+    refund_timestamp = db.Column(db.DateTime)  # When the refund was processed
+    
     # Relationships
     professional = db.relationship('Professional', back_populates='appointments')
     client = db.relationship('Client', back_populates='appointments')

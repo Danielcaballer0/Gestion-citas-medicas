@@ -1,11 +1,25 @@
 from datetime import datetime, timedelta
-from flask import flash
+from flask import flash, current_app
 from flask_mail import Message
 from app import mail, db
 from models import Appointment, Schedule
+import logging
+from sendgrid_utils import send_appointment_confirmation, send_appointment_reminder
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 def send_confirmation_email(appointment):
     """Send appointment confirmation email to client"""
+    # Use SendGrid if available, otherwise fall back to Flask-Mail
+    if current_app.config.get('SENDGRID_API_KEY'):
+        try:
+            return send_appointment_confirmation(appointment)
+        except Exception as e:
+            logger.error(f"Error using SendGrid: {str(e)}")
+            # Fall back to standard mail if SendGrid fails
+    
+    # Standard Flask-Mail implementation
     client_email = appointment.client.user.email
     professional_name = appointment.professional.user.get_full_name()
     appointment_date = appointment.date.strftime('%d/%m/%Y')
@@ -34,10 +48,20 @@ def send_confirmation_email(appointment):
         return True
     except Exception as e:
         flash(f"Error al enviar email: {str(e)}", "danger")
+        logger.error(f"Error sending email via Flask-Mail: {str(e)}")
         return False
 
 def send_reminder_email(appointment):
     """Send appointment reminder email to client"""
+    # Use SendGrid if available, otherwise fall back to Flask-Mail
+    if current_app.config.get('SENDGRID_API_KEY'):
+        try:
+            return send_appointment_reminder(appointment)
+        except Exception as e:
+            logger.error(f"Error using SendGrid for reminder: {str(e)}")
+            # Fall back to standard mail if SendGrid fails
+    
+    # Standard Flask-Mail implementation
     client_email = appointment.client.user.email
     professional_name = appointment.professional.user.get_full_name()
     appointment_date = appointment.date.strftime('%d/%m/%Y')
@@ -65,6 +89,7 @@ def send_reminder_email(appointment):
         return True
     except Exception as e:
         flash(f"Error al enviar recordatorio: {str(e)}", "danger")
+        logger.error(f"Error sending reminder via Flask-Mail: {str(e)}")
         return False
 
 def get_available_slots(professional_id, date):
