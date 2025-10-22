@@ -41,6 +41,37 @@ def login():
     
     return render_template('login.html', form=form)
 
+@auth_bp.route('/admin-login', methods=['GET', 'POST'])
+def admin_login():
+    """Página de inicio de sesión específica para administradores"""
+    if current_user.is_authenticated:
+        if current_user.is_admin():
+            return redirect(url_for('admin.admin_access'))
+        return redirect(url_for('main.index'))
+    
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Email o contraseña incorrectos', 'danger')
+            return redirect(url_for('auth.admin_login'))
+        
+        if not user.is_active:
+            flash('Esta cuenta ha sido desactivada. Contacte al administrador.', 'warning')
+            return redirect(url_for('auth.admin_login'))
+        
+        if not user.is_admin():
+            flash('No tienes permisos de administrador para acceder', 'danger')
+            return redirect(url_for('auth.admin_login'))
+        
+        login_user(user, remember=form.remember_me.data)
+        user.last_login = datetime.utcnow()
+        db.session.commit()
+        
+        return redirect(url_for('admin.admin_access'))
+    
+    return render_template('admin/login.html', form=form)
+
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:

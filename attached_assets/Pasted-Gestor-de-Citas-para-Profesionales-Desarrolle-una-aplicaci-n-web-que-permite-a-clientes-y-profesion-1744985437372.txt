@@ -2,10 +2,6 @@ Gestor de Citas para Profesionales
 
 Desarrolle una aplicación web que permite a clientes y profesionales agendar y administrar citas de manera fácil y organizada. Los clientes podrán registrarse, buscar profesionales según su especialidad y disponibilidad, y reservar citas en los horarios disponibles. Los profesionales podrán gestionar su perfil, definir su horario de atención y aceptar o rechazar citas. La aplicación contará con un sistema de notificaciones para confirmar las reservas y enviar recordatorios a los usuarios. Se desarrollará con HTML5, CSS3 y JavaScript en el frontend para una interfaz amigable e intuitiva, mientras que el backend estará construido con Python (Flask o Django) y almacenará los datos en una base de datos MySQL. EI sistema validará la disponibilidad de horarios para evitar reservas dobles y permitirá cancelar o modificar citas según las políticas establecidas. Para garantizar la seguridad, se implementará un sistema de autenticación con contraseñas cifradas y protección contra accesos no autorizados. Además, contará con un panel de administración donde los profesionales podrán ver estadísticas sobre sus citas y clientes. Como funciones adicionales, se podrán integrar pagos en línea para citas pagas y sincronización con Google Calendar. La aplicación estará diseñada para ser fácil de usar y podrá desplegarse en servidores compatibles con Python y MySQL, como Hostinger o AWS.
 
-
-ChatGPT dijo:
-Aquí tienes una lista detallada y organizada de requisitos funcionales y no funcionales para la aplicación web Gestor de Citas para Profesionales, según la descripción proporcionada:
-
 ✅ Requisitos Funcionales
 1. Gestión de usuarios
 Registro y login para clientes y profesionales.

@@ -2,7 +2,9 @@ import os
 
 class Config:
     SECRET_KEY = os.environ.get("SESSION_SECRET", "dev-secret-key")
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # Usar ruta absoluta para el archivo de base de datos
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", f"sqlite:///{os.path.join(basedir, 'instance', 'app.db')}")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
@@ -23,9 +25,12 @@ class Config:
     # SendGrid configuration
     SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
     
-    # Stripe configuration (for payment processing)
-    STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
-    STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
+    # PayPal configuration
+    PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
+    PAYPAL_CLIENT_SECRET = os.environ.get('PAYPAL_CLIENT_SECRET')
+    PAYPAL_PRODUCTION = os.environ.get('PAYPAL_PRODUCTION', 'false').lower() in ['true', 'on', '1']
+    
+    PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'paypal')  # Solo se permite PayPal como pasarela de pago
     
     # Google Calendar API
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')

@@ -10,8 +10,9 @@ from app import db
 from models import User, Client, Professional, Appointment, Specialty
 from forms import ClientProfileForm, AppointmentForm, SearchForm
 from utils import get_available_slots, send_confirmation_email, get_upcoming_appointments
-from stripe_utils import create_checkout_session, refund_payment
+from paypal_utils import create_checkout_session, refund_payment
 from google_calendar_utils import get_auth_url, add_appointment_to_calendar, get_credentials
+import os
 
 client_bp = Blueprint('client', __name__)
 
@@ -289,19 +290,36 @@ def oauth2callback():
         flash('No tienes permisos para acceder a esta página', 'danger')
         return redirect(url_for('main.index'))
     
+    # Verificar que el estado exista en la sesión
+    if 'state' not in session:
+        flash('Error de autenticación: sesión inválida', 'danger')
+        return redirect(url_for('client.my_appointments'))
+        
     # Specify the state when creating the flow in the callback so that it can
     # verified in the authorization server response.
     state = session['state']
     
     try:
+        # Verificar que el archivo de credenciales exista
+        client_secrets_file = 'client_secret_678559980772-kftgco67hmaflpdvhetp9ji96s1bcjqe.apps.googleusercontent.com.json'
+        if not os.path.exists(client_secrets_file):
+            flash('Error: Archivo de credenciales de Google no encontrado', 'danger')
+            return redirect(url_for('client.my_appointments'))
+            
+        # Crear el flujo de autorización
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-            'client_secret.json',
+            client_secrets_file,
             scopes=['https://www.googleapis.com/auth/calendar'],
             state=state)
-        flow.redirect_uri = url_for('client.oauth2callback', _external=True)
+            
+        # Usamos la URL exacta configurada en el archivo de credenciales para evitar el error redirect_uri_mismatch
+        flow.redirect_uri = 'http://localhost:5000/client/google/oauth2callback'
+        
+        # Obtener la URL completa de la solicitud actual
+        authorization_response = request.url
+        print(f"URL de respuesta de autorización: {authorization_response}")
         
         # Use the authorization server's response to fetch the OAuth 2.0 tokens.
-        authorization_response = request.url
         flow.fetch_token(authorization_response=authorization_response)
         
         # Store credentials in the session.
@@ -318,6 +336,9 @@ def oauth2callback():
         flash('Conectado exitosamente a Google Calendar!', 'success')
         return redirect(url_for('client.my_appointments'))
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error detallado: {error_details}")
         flash(f'Error al conectar con Google Calendar: {str(e)}', 'danger')
         return redirect(url_for('client.my_appointments'))
 

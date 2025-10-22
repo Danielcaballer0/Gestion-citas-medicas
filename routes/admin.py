@@ -1,10 +1,22 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app import db
-from models import User, Professional, Client, Specialty, Appointment
+from models import User, Professional, Client, Appointment, Specialty
 from forms import SpecialtyForm
+from datetime import datetime, timedelta
+from functools import wraps
 
-admin_bp = Blueprint('admin', __name__)
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+# Decorador para verificar si el usuario es administrador
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin():
+            flash('No tienes permisos para acceder a esta sección', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @admin_bp.before_request
 def check_admin():
@@ -12,6 +24,13 @@ def check_admin():
     if not current_user.is_authenticated or not current_user.is_admin():
         flash('No tienes permisos para acceder a esta sección', 'danger')
         return redirect(url_for('main.index'))
+        
+# Ruta directa para acceso de administrador
+@admin_bp.route('/acceso')
+@admin_required
+def admin_access():
+    """Ruta directa para acceso de administrador"""
+    return redirect(url_for('admin.dashboard'))
 
 @admin_bp.route('/dashboard')
 @login_required
@@ -33,16 +52,22 @@ def dashboard():
     recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
     
     # Recent appointments
+    from sqlalchemy.orm import aliased
+    
+    # Crear alias para User para diferenciar entre profesional y cliente
+    ProfessionalUser = aliased(User)
+    ClientUser = aliased(User)
+    
     recent_appointments = db.session.query(
-        Appointment, User, User
+        Appointment, ProfessionalUser, ClientUser
     ).join(
         Professional, Appointment.professional_id == Professional.id
     ).join(
+        ProfessionalUser, Professional.user_id == ProfessionalUser.id
+    ).join(
         Client, Appointment.client_id == Client.id
     ).join(
-        User, Professional.user_id == User.id
-    ).join(
-        User, Client.user_id == User.id, aliased=True
+        ClientUser, Client.user_id == ClientUser.id
     ).order_by(
         Appointment.created_at.desc()
     ).limit(5).all()
@@ -81,7 +106,8 @@ def users():
     return render_template('admin/users.html',
                           users=users,
                           pagination=pagination,
-                          role_filter=role_filter)
+                          role_filter=role_filter,
+                          current_user=current_user)
 
 @admin_bp.route('/toggle_user/<int:user_id>', methods=['POST'])
 @login_required
@@ -99,6 +125,49 @@ def toggle_user(user_id):
     
     action = "activada" if user.is_active else "desactivada"
     flash(f'Cuenta {action} correctamente', 'success')
+    return redirect(url_for('admin.users'))
+
+@admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    """Delete a user"""
+    user = User.query.get_or_404(user_id)
+    
+    # Prevent deleting own account
+    if user.id == current_user.id:
+        flash('No puedes eliminar tu propia cuenta', 'danger')
+        return redirect(url_for('admin.users'))
+    
+    # Check if user is a professional with appointments
+    if user.is_professional():
+        professional = Professional.query.filter_by(user_id=user.id).first()
+        if professional and Appointment.query.filter_by(professional_id=professional.id).count() > 0:
+            flash('No se puede eliminar este profesional porque tiene citas asociadas', 'danger')
+            return redirect(url_for('admin.users'))
+    
+    # Check if user is a client with appointments
+    if user.is_client():
+        client = Client.query.filter_by(user_id=user.id).first()
+        if client and Appointment.query.filter_by(client_id=client.id).count() > 0:
+            flash('No se puede eliminar este cliente porque tiene citas asociadas', 'danger')
+            return redirect(url_for('admin.users'))
+    
+    # Delete associated profiles
+    if user.is_professional():
+        professional = Professional.query.filter_by(user_id=user.id).first()
+        if professional:
+            db.session.delete(professional)
+    
+    if user.is_client():
+        client = Client.query.filter_by(user_id=user.id).first()
+        if client:
+            db.session.delete(client)
+    
+    # Delete user
+    db.session.delete(user)
+    db.session.commit()
+    
+    flash('Usuario eliminado correctamente', 'success')
     return redirect(url_for('admin.users'))
 
 @admin_bp.route('/specialties', methods=['GET', 'POST'])

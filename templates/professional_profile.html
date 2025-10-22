@@ -4,6 +4,17 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css">
+<style>
+    .available-slot {
+        opacity: 0.7 !important;
+    }
+    .fc-day-today {
+        background-color: rgba(var(--bs-primary-rgb), 0.05) !important;
+    }
+    .fc-col-header-cell {
+        background-color: var(--bs-dark);
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -74,17 +85,22 @@
                         <tbody>
                             {% set days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'] %}
                             {% for day_idx in range(7) %}
-                                <tr>
+                                {% set has_schedule = false %}
+                                {% set schedules_for_day = [] %}
+                                {% for schedule in professional.schedules %}
+                                    {% if schedule.day_of_week == day_idx %}
+                                        {% set has_schedule = true %}
+                                        {% set _ = schedules_for_day.append(schedule) %}
+                                    {% endif %}
+                                {% endfor %}
+                                <tr class="{% if has_schedule %}bg-primary bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
                                     <td>{{ days[day_idx] }}</td>
                                     <td>
-                                        {% set has_schedule = false %}
-                                        {% for schedule in professional.schedules %}
-                                            {% if schedule.day_of_week == day_idx %}
-                                                {{ schedule.start_time.strftime('%H:%M') }} - {{ schedule.end_time.strftime('%H:%M') }}
-                                                {% set has_schedule = true %}
-                                            {% endif %}
-                                        {% endfor %}
-                                        {% if not has_schedule %}
+                                        {% if schedules_for_day %}
+                                            {% for schedule in schedules_for_day %}
+                                                {{ schedule.start_time.strftime('%H:%M') }} - {{ schedule.end_time.strftime('%H:%M') }}{% if not loop.last %}<br>{% endif %}
+                                            {% endfor %}
+                                        {% else %}
                                             <span class="text-muted">No disponible</span>
                                         {% endif %}
                                     </td>
@@ -137,7 +153,44 @@
                         endTime: '{{ schedule.end_time.strftime("%H:%M") }}'
                     },
                     {% endfor %}
-                ]
+                ],
+                eventSources: [
+                    {
+                        events: [
+                            {% for schedule in professional.schedules %}
+                            {
+                                title: 'Disponible',
+                                daysOfWeek: [{{ schedule.day_of_week }}],
+                                startTime: '{{ schedule.start_time.strftime("%H:%M") }}',
+                                endTime: '{{ schedule.end_time.strftime("%H:%M") }}',
+                                color: 'var(--bs-primary)',
+                                textColor: 'white',
+                                display: 'background',
+                                classNames: ['available-slot']
+                            },
+                            {% endfor %}
+                        ]
+                    }
+                ],
+                dayCellDidMount: function(info) {
+                    // Verificar si el día tiene horarios disponibles
+                    let hasSchedule = false;
+                    let dayOfWeek = info.date.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
+                    
+                    // Convertir al formato usado en la base de datos (0 = lunes, ..., 6 = domingo)
+                    let dbDayOfWeek = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                    
+                    {% for schedule in professional.schedules %}
+                        if (dbDayOfWeek === {{ schedule.day_of_week }}) {
+                            hasSchedule = true;
+                        }
+                    {% endfor %}
+                    
+                    // Aplicar color de fondo según disponibilidad
+                    if (!hasSchedule) {
+                        info.el.style.backgroundColor = 'rgba(var(--bs-danger-rgb), 0.1)'; // Rojo claro para no disponible
+                    }
+                }
             });
             calendar.render();
         }

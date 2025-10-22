@@ -87,16 +87,24 @@
                                 <td>{{ user.last_login.strftime('%d/%m/%Y %H:%M') if user.last_login else 'Nunca' }}</td>
                                 <td>
                                     {% if user.id != current_user.id %}
-                                        <form method="POST" action="{{ url_for('admin.toggle_user', user_id=user.id) }}"
-                                              onsubmit="return confirm('¿Estás seguro de que deseas {{ 'desactivar' if user.is_active else 'activar' }} esta cuenta?');">
-                                            <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if user.is_active else 'btn-outline-success' }}">
-                                                {% if user.is_active %}
-                                                    <i class="fas fa-ban"></i> Desactivar
-                                                {% else %}
-                                                    <i class="fas fa-check"></i> Activar
-                                                {% endif %}
-                                            </button>
-                                        </form>
+                                        <div class="d-flex gap-2">
+                                            <form method="POST" action="{{ url_for('admin.toggle_user', user_id=user.id) }}"
+                                                  onsubmit="return confirm('¿Estás seguro de que deseas {{ 'desactivar' if user.is_active else 'activar' }} esta cuenta?');">
+                                                <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if user.is_active else 'btn-outline-success' }}">
+                                                    {% if user.is_active %}
+                                                        <i class="fas fa-ban"></i> Desactivar
+                                                    {% else %}
+                                                        <i class="fas fa-check"></i> Activar
+                                                    {% endif %}
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}"
+                                                  onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
                                     {% else %}
                                         <button class="btn btn-sm btn-outline-secondary" disabled>
                                             <i class="fas fa-user-shield"></i> Tu cuenta
