@@ -105,7 +105,9 @@ Para ejecutar los tests:
 ```bash
 python -m pytest
 ```
+## Despliegue en Vercel
 
+[App gestor citas medicas](https://gestion-citas-medicas-dun.vercel.app/)
 ## Integración con Servicios Externos
 
 ### Google Calendar
